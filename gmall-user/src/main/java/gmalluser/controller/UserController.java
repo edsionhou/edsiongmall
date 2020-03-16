@@ -1,8 +1,8 @@
 package gmalluser.controller;
 
-import gmalluser.bean.UmsMember;
-import gmalluser.bean.UmsMemberReceiveAddress;
-import gmalluser.service.UserService;
+import com.hou.gmall.bean.UmsMember;
+import com.hou.gmall.bean.UmsMemberReceiveAddress;
+import com.hou.gmall.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +33,7 @@ public class UserController {
     @GetMapping("/getAddr")
     @ResponseBody
     //RequestBody 接收前端传来的json类型的参数
-    public  List<UmsMemberReceiveAddress> getReceiveAddressByMemberId( String memberId){
+    public  List<UmsMemberReceiveAddress> getReceiveAddressByMemberId(String memberId){
         List<UmsMemberReceiveAddress> receiveAddressByMemberId = userService.getReceiveAddressByMemberId(memberId);
         System.out.println(receiveAddressByMemberId);
         return receiveAddressByMemberId;
