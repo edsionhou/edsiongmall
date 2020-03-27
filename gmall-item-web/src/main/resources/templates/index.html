@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>HEHE</title>
+</head>
+<body>
+<h1>呵呵</h1>
+<!--JSP的标签已经不管用了-->
+<p>${hello}</p> 
+
+<!--1.取值-->
+<p th:text="呵呵尼玛死了">默认值</p>
+<!--/*@thymesVar id="hello" type="com.hou"*/-->
+<p th:text="${hello}">默认值</p>
+
+<!--2.循环 -->
+<!--/*@thymesVar id="list" type="ch"*/-->
+<!--每次循环产生一个 p标签-->
+<p th:each="str:${list}" th:text="${str}" ></p>
+<p th:each="str:${list}" >
+    <input th:text="${str}" th:value="${str}">
+</p>
+<p>32-------------------</p>
+<!--下面这个不管用,不会生成一堆input标签-->
+<p th:each="str:${list}" th:text="${str}">
+    <input type="text" th:value="${str}">
+</p>
+
+
+<input type="text" value="1111"/>
+
+<!--3.判断-->
+<p th:if="1==1">TRUE</p>
+<input type="checkbox" th:checked="${check}=='0'"/>
+<p th:text="(${check}=='1')?'是10':'不是10'"></p>
+
+
+
+<!--4.传值给javascript-->
+<!--js传参 传字符串时 必须用‘ ’ 括起来-->
+    <a href="javascript:aa('string')">点我</a>
+
+<script language="JavaScript">
+    function aa(result){
+        alert("JS函数被调用：--->"+result);
+        //     alert(result);
+    }
+</script>
+
+<a th:href="'javascript:aa(\''+${hello}+'\')'">点我2</a>
+
+<script language="JavaScript">
+    function aa(result){
+            alert(result);
+    }
+</script>
+
+
+
+<!--5.页面引入-->
+<div th:include="indexInner">被引入的页面</div>
+
+<!--5.1引入页面的片段-->
+<div th:include="indexInner::innerPart">被引入的部分页面</div>
+
+<!-- 更多请见 thymeleaf中文文档-->
+<!-- 更多请见 thymeleaf中文文档-->
+<!-- 更多请见 thymeleaf中文文档-->
+
+
+
+
+
+</body>
+
+</html>

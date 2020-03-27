@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hou.gmallmanage.mapper.PmsProductSaleAttrMapper">
+    <select id="selectSpuSaleAttrListBySku" resultMap="PmsProductSaleAttr1">
+        SELECT
+			a.id as a_id,b.id as b_id,a.*,b.*,if(c.sku_id,1,0) as ischecked
+		FROM
+			pms_product_sale_attr a
+		JOIN pms_product_sale_attr_value b ON a.product_id = b.product_id
+		AND a.sale_attr_id = b.sale_attr_id AND a.product_id = #{productId}
+		left join pms_sku_sale_attr_value c
+		on b.id = c.sale_attr_value_id AND c.sku_id = #{skuId};
+    </select>
+
+    <resultMap id="PmsProductSaleAttr1" type="com.hou.gmall.bean.PmsProductSaleAttr" autoMapping="true">
+        <id property="id" column="a_id"></id>
+        <collection property="spuSaleAttrValueList" javaType="java.util.List" ofType="com.hou.gmall.bean.PmsProductSaleAttrValue" autoMapping="true">
+        <id property="id" column="b_id"></id>
+
+        </collection>
+
+    </resultMap>
+
+
+
+
+</mapper>

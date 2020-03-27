@@ -76,7 +76,7 @@
                 <version>${mybatis.version}</version>
             </dependency>
 
-<!--            nekohtml xml-apis batik-ext 是thymeleaf用的-->
+<!--            nekohtml xml-apis batik-ext 是thymeleaf用的  松校验！！-->
             <dependency>
                 <groupId>net.sourceforge.nekohtml</groupId>
                 <artifactId>nekohtml</artifactId>

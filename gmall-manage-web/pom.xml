@@ -19,6 +19,12 @@
     </properties>
 
     <dependencies>
+        <!--使用 yml 文件进行映射就会提示 让加入此 依赖包-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>com.hou</groupId>
             <artifactId>gmall-web-util</artifactId>

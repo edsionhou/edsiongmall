@@ -29,6 +29,13 @@ public class AttriServiceImpl implements AttriService {
         PmsBaseAttrInfo info = new PmsBaseAttrInfo();
         info.setCatalog3Id(catalog3Id);
         List<PmsBaseAttrInfo> pmsBaseAttrInfos = pmsBaseAttrInfoMapper.select(info);
+        for (PmsBaseAttrInfo baseAttrInfo: pmsBaseAttrInfos) {
+            //遍历每个PmsBaseAttrInfo   获取id
+            PmsBaseAttrValue pmsBaseAttrValue = new PmsBaseAttrValue();
+            pmsBaseAttrValue.setAttrId(baseAttrInfo.getId());
+            List<PmsBaseAttrValue> pmsBaseAttrValues = pmsBaseAttrValueMapper.select(pmsBaseAttrValue); //获取到attr id对应的 Value
+           baseAttrInfo.setAttrValueList(pmsBaseAttrValues);
+        }
         return pmsBaseAttrInfos;
     }
 

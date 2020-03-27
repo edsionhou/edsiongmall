@@ -15,6 +15,12 @@
     </parent>
 
     <dependencies>
+<!--        fastdfs的客户端jar包-->
+        <dependency>
+            <groupId>org.csource</groupId>
+            <artifactId>fastdfs-client-java</artifactId>
+            <version>1.29-SNAPSHOT</version>
+        </dependency>
 <!--        将dubbo框架引入到common-util中(因为web层和service层将来都需要使用dubbo进行通讯)-->
         <dependency>
             <groupId>com.alibaba</groupId>

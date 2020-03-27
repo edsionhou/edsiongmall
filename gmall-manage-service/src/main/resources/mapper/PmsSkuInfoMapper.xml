@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hou.gmallmanage.mapper.PmsSkuInfoMapper">
+    <select id="selectSkuSaleAttrValueListBySpu" resultMap="valuelist">
+        SELECT
+        a.id as a_id,
+        b.id as b_id,
+        a.*,
+        b.*
+        from  pms_sku_info a , pms_sku_sale_attr_value b
+        where a.product_id = #{productId} AND a.id = b.sku_id
+    </select>
+
+    <resultMap id="valuelist" type="com.hou.gmall.bean.PmsSkuInfo" autoMapping="true">
+        <result property="id" column="a_id"></result>
+        <collection property="skuSaleAttrValueList" javaType="java.util.List" ofType="com.hou.gmall.bean.PmsSkuSaleAttrValue" autoMapping="true">
+        <result property="id" column="b_id"></result>
+
+        </collection>
+
+    </resultMap>
+
+
+</mapper>

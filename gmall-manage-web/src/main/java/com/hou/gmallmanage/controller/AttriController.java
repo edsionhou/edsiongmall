@@ -23,6 +23,7 @@ public class AttriController {
     public List<PmsBaseAttrInfo> attrInfoList(@RequestParam String catalog3Id) {
         List<PmsBaseAttrInfo> pmsBaseAttrInfos = attriService.attrInfoLists(catalog3Id);
         return pmsBaseAttrInfos;
+        //随便定义名字， 返回json格式，在前端都是 data数据，之前做的ajax请求中也是这么封装的result；
     }
 
 

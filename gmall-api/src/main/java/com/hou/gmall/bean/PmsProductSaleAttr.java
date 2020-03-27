@@ -65,4 +65,15 @@ public class PmsProductSaleAttr implements Serializable {
     public void setSpuSaleAttrValueList(List<PmsProductSaleAttrValue> spuSaleAttrValueList) {
         this.spuSaleAttrValueList = spuSaleAttrValueList;
     }
+
+    @Override
+    public String toString() {
+        return "PmsProductSaleAttr{" +
+                "id='" + id + '\'' +
+                ", productId='" + productId + '\'' +
+                ", saleAttrId='" + saleAttrId + '\'' +
+                ", saleAttrName='" + saleAttrName + '\'' +
+                ", spuSaleAttrValueList=" + spuSaleAttrValueList +
+                '}';
+    }
 }
