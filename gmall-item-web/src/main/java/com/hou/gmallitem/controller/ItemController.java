@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,7 +30,10 @@ public class ItemController {
 
 
     @GetMapping("/{skuId}.html")
-    public String skuIdhtml(@PathVariable("skuId") String skuId, ModelMap map) {
+    public String skuIdhtml(@PathVariable("skuId") String skuId, ModelMap map, HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        System.out.println("请求的IP-->>>"+remoteAddr+"线程为"+Thread.currentThread().getName());
+//        request.getHeader();    nginx负载均衡时返回的是代理服务器ip
         PmsSkuInfo pmsSkuInfo = skuService.getSkuById(skuId);
         //SKU对象
         map.put("skuInfo", pmsSkuInfo);

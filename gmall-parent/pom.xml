@@ -40,6 +40,7 @@
         <jest.version>5.3.3</jest.version>
         <jna.version>4.5.1</jna.version>
         <beanUtils.version>1.9.3</beanUtils.version>
+        <jwt.version>0.9.0</jwt.version>
     </properties>
 
 <!--    依赖管理-->
@@ -152,6 +153,14 @@
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>${beanUtils.version}</version>
+            </dependency>
+
+
+<!--            jwt 加密的jar包  token验证-->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jwt.version}</version>
             </dependency>
 
 

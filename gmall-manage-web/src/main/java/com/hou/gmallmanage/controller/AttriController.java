@@ -19,7 +19,7 @@ public class AttriController {
     @Reference
     AttriService attriService;
 
-    @GetMapping("/attrInfoList")
+    @GetMapping(value = "/attrInfoList",produces ="application/json; charset=UTF-8 ") //可以解决乱码问题？
     public List<PmsBaseAttrInfo> attrInfoList(@RequestParam String catalog3Id) {
         List<PmsBaseAttrInfo> pmsBaseAttrInfos = attriService.attrInfoLists(catalog3Id);
         return pmsBaseAttrInfos;

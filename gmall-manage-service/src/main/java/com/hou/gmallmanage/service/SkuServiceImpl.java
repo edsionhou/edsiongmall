@@ -16,7 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import redis.clients.jedis.Jedis;
 
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 
@@ -69,28 +72,56 @@ public class SkuServiceImpl implements SkuService {
         //查询缓存
         String skuKey = "sku:" + skuId + "info";
         String skuJson = jedis.get(skuKey);  //从redis中获取 JSON
+        System.out.println("线程" + Thread.currentThread().getName() + "来了，获取到的skuJson为 " + skuJson);
 //        if(StringUtils.isNoneBlank(skuJson)){
-        // =  skuJson!=null && !skuJson.equals("")
-        if (skuJson != null && !skuJson.equals("")) {
+        if (skuJson != null /*&& !skuJson.equals("NOT_EXITS")*/) {
+            //1.缓存有
             pmsSkuInfo = JSON.parseObject(skuJson, PmsSkuInfo.class);
+        } else if ("NOT_EXITS".equals(skuJson)) {
+            jedis.close();
+            return null;
         } else {
-            //缓存没有，查询mysql   但存在缓存穿透  缓存击穿  缓存雪崩问题
-            //设置分布式锁  多个redis客户端，同时访问redis，普通锁无法做到同步
-            String OK = jedis.set(skuKey, "1", "nx", "ex", 20);
+            //2.缓存没有，   查询mysql   但存在缓存穿透  缓存击穿  缓存雪崩问题
+            //设置分布式锁Lock  多个redis客户端，同时访问redis，普通锁无法做到同步
+            String lockToken = UUID.randomUUID().toString();
+            String OK = jedis.set("sku:" + skuId + ":lock", lockToken, "nx", "ex", 10);
 
             if (OK != null && OK.equals("OK")) {  //没有redis设置此 KEY，成功
-                //设置锁成功，有权访问数据库 20s过期时间内
+                //3.设置锁成功，有权访问数据库 10s过期时间内
                 pmsSkuInfo = getSkuByDBsId(skuId);
                 if (pmsSkuInfo != null) {
+                    /*同一个客户端，打开多个网页进行同一个请求，如果中间有阻塞，则会阻塞所有后续请求，
+                    controller调用service方法，是多次调用，而不是多个调用！！！而不同浏览器则是多个调用
+                    据我测试，controller serivice都是单例的，spring容器默认创建单例的，同一客户端，相当于同一对象多次调用，
+                    不同客户端则是不同对象调用，所以不会阻塞*/
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     jedis.set(skuKey, JSON.toJSONString(pmsSkuInfo));
+
                 } else {
                     //解决缓存穿透问题：防止多次该字符串请求  为skuKey赋值 空
-                    jedis.setex(skuKey, 60 * 3, JSON.toJSONString(""));
+                    jedis.setex(skuKey, 60 * 3, JSON.toJSONString("NOT_EXITS"));
                 }
+                //3.释放分布式锁
+                System.out.println(Thread.currentThread().getName() + "获取到了锁");
+
+                lockToken = jedis.get("sku:" + skuId + ":lock");
+                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+                jedis.eval(script, Collections.singletonList("sku:" + skuId + ":lock"), Collections.singletonList(lockToken));
+//                jedis.del("sku:" + skuId + ":lock");
             } else {
-                //设置失败 自旋
-                System.out.println("孤儿线程？--->"+Thread.currentThread().getName());
+                //4.设置失败 自旋
+                System.out.println("孤儿线程？--->" + Thread.currentThread().getName());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 //                getSkuById(skuId);  //孤儿线程？？ 没懂  个人感觉是 当前方法无法获取递归调用的结果  return了null
+                jedis.close();
                 return getSkuById(skuId);
             }
 
@@ -115,6 +146,35 @@ public class SkuServiceImpl implements SkuService {
     public List<PmsSkuInfo> getSkuSaleAttrValueListBySpu(String productId) {
         List<PmsSkuInfo> pmsSkuInfos = pmsSkuInfoMapper.selectSkuSaleAttrValueListBySpu(productId);
         return pmsSkuInfos;
+    }
+
+    @Override
+    public List<PmsSkuInfo> getAllSku(String catalog3Id) {
+        List<PmsSkuInfo> pmsSkuInfos = pmsSkuInfoMapper.selectAll();
+        for (PmsSkuInfo skuInfo :
+                pmsSkuInfos) {
+            String skuId = skuInfo.getId();
+            PmsSkuAttrValue pmsSkuAttrValue = new PmsSkuAttrValue();
+            pmsSkuAttrValue.setSkuId(skuId);
+            List<PmsSkuAttrValue> select = pmsSkuAttrValueMapper.select(pmsSkuAttrValue);
+            skuInfo.setSkuAttrValueList(select);
+        }
+
+        return pmsSkuInfos;
+    }
+
+    @Override
+    public boolean checkPrice(String productSkuId, BigDecimal price) {
+        boolean b = false;
+        PmsSkuInfo pmsSkuInfo = new PmsSkuInfo();
+        pmsSkuInfo.setId(productSkuId);
+        pmsSkuInfo = pmsSkuInfoMapper.selectOne(pmsSkuInfo);
+        if (pmsSkuInfo != null) {
+            BigDecimal price1 = pmsSkuInfo.getPrice();
+           b =  price.compareTo(price1) == 0 ? true: false;
+        }
+
+        return b;
     }
 
 

@@ -8,10 +8,12 @@ import com.hou.gmall.service.AttriService;
 import com.hou.gmallmanage.mapper.PmsBaseAttrInfoMapper;
 import com.hou.gmallmanage.mapper.PmsBaseAttrValueMapper;
 import com.hou.gmallmanage.mapper.PmsBaseSaleAttrMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AttriServiceImpl implements AttriService {
@@ -88,5 +90,13 @@ public class AttriServiceImpl implements AttriService {
     public List<PmsBaseSaleAttr> baseSaleAttrList(){  //获取所有销售属性
         List<PmsBaseSaleAttr> pmsBaseSaleAttrs = pmsBaseSaleAttrMapper.selectAll();
         return pmsBaseSaleAttrs;
+    }
+
+    @Override //ES根据关键字查询时使用，给list页面返回 平台属性 集合
+    public List<PmsBaseAttrInfo> getAttrValueListByValueId(Set<String> valueSet) {
+        String join = StringUtils.join(valueSet, ","); //把Set根据分隔符得到一个字符串
+        System.out.println("join字符串，代表该sku所拥有的平台属性集合 "+join);
+        List<PmsBaseAttrInfo> pmsBaseAttrInfos =  pmsBaseAttrInfoMapper.SelectAttrValueListByValueId(join);
+        return pmsBaseAttrInfos;
     }
 }

@@ -46,5 +46,10 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-ext</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+        </dependency>
     </dependencies>
 </project>

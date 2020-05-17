@@ -23,7 +23,6 @@ public class PmsBaseAttrInfo implements Serializable {
     private String isEnabled;
 
     @Transient
-    @Column
     List<PmsBaseAttrValue> attrValueList;
 
     public String getId() {

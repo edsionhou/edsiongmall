@@ -10,6 +10,4 @@ import org.springframework.stereotype.Component;
 @ComponentScan("com.hou.conf")
 public class Config {
 
-
-
 }

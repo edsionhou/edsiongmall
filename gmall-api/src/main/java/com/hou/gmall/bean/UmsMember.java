@@ -14,7 +14,7 @@ import java.util.Date;
 public class UmsMember implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 增加主键返回策略
-    private Long id;
+    private String id;
     private Long memberLevelId;
     private String username;
     private String password;
@@ -33,12 +33,48 @@ public class UmsMember implements Serializable {
     private int growth;
     private int luckeyCount;
     private int historyIntegration;
+    private Long sourceUid;
+    private String accessToken;
+    private String accessCode;
 
-    public Long getId() {
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public Long getSourceUid() {
+        return sourceUid;
+    }
+
+    public void setSourceUid(Long sourceUid) {
+        this.sourceUid = sourceUid;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public String getAccessCode() {
+        return accessCode;
+    }
+
+    public void setAccessCode(String accessCode) {
+        this.accessCode = accessCode;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -66,13 +102,6 @@ public class UmsMember implements Serializable {
         this.password = password;
     }
 
-    public String getNickName() {
-        return nickname;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickname = nickName;
-    }
 
     public String getPhone() {
         return phone;

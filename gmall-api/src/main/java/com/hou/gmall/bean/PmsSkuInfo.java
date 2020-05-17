@@ -23,8 +23,6 @@ public class PmsSkuInfo implements Serializable {
     @Transient
     String spuId;
 
-
-
     @Column
     BigDecimal price;
 
