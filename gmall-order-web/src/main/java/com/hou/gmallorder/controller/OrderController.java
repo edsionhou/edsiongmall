@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -73,13 +74,13 @@ public class OrderController {
 
     @PostMapping("/submitOrder")
     @LoginRequired(LoginNecessary = true)  //点击提交订单  真正的结算
-    public String submitOrder(String receiveAddressId, String tradeCode, BigDecimal totalAmount, HttpServletRequest request, ModelMap map) {
+    public String submitOrder(String receiveAddressId, String tradeCode, BigDecimal totalAmount, HttpServletRequest request, HttpServletResponse response,ModelMap map) {
         String memberId = (String) request.getAttribute("memberId");
         String username = (String) request.getAttribute("username");
         //1.检查交易码
         String success = orderService.checkTradeCode(memberId, tradeCode);
         if (success.equals("success")) {
-            //订单对象
+            //创建订单对象
             OmsOrder omsOrder = new OmsOrder();
             omsOrder.setAutoConfirmDay(7);
             omsOrder.setConfirmStatus(1);
@@ -138,6 +139,7 @@ public class OrderController {
                 }
             }
             omsOrder.setOmsOrderItems(omsOrderItems);
+
 
             //3.将订单和订单详情写入数据库 & 删除购物车中的对应商品
             orderService.saveOrder(omsOrder);

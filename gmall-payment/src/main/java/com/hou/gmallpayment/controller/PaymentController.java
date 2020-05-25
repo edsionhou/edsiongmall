@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sun.applet.Main;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -43,27 +44,30 @@ public class PaymentController {
     public String pay(String outTradeNumber, BigDecimal totalAmount, HttpServletRequest request, ModelMap map) {
         String memberId = (String) request.getAttribute("memberId");
         String username = (String) request.getAttribute("username");
-        map.put("username",username);
-        map.put("outTradeNumber",outTradeNumber);
-        map.put("totalAmount",totalAmount);
+        map.put("username", username);
+        map.put("outTradeNumber", outTradeNumber);
+        map.put("totalAmount", totalAmount);
+        
         return "index";
+
     }
 
 
-
-    @RequestMapping(value = "/alipay/submit",method = RequestMethod.POST)
+    @RequestMapping(value = "/alipay/submit", method = RequestMethod.POST)
     @LoginRequired(LoginNecessary = true)
-    public String alipay(String outTradeNumber, BigDecimal totalAmount, HttpServletRequest request, ModelMap modelMap){
+//    @ResponseBody
+    public String alipay(String outTradeNumber, BigDecimal totalAmount, HttpServletRequest request, ModelMap modelMap) {
         //获得一个支付宝的客户端，它并不是一个链接 而是一个封装好http的表单请求
-        AlipayTradePagePayRequest alipayRequest =  new  AlipayTradePagePayRequest(); //2 创建API对应的request
-        Map<String,Object> map = new HashMap<>();
-        map.put("out_trade_no",outTradeNumber);
-        map.put("product_code","FAST_INSTANT_TRADE_PAY");
-        map.put("total_amount",0.01);
-        map.put("subject","机械师测试用");
+        AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest(); //2 创建API对应的request
+        Map<String, Object> map = new HashMap<>();
+        map.put("out_trade_no", outTradeNumber);
+        map.put("product_code", "FAST_INSTANT_TRADE_PAY");
+        map.put("total_amount", 0.01);
+        map.put("subject", "机械师测试用");
         String s = JSON.toJSONString(map);
-        alipayRequest.setReturnUrl(AlipayConfig.return_payment_url );
-        alipayRequest.setNotifyUrl(AlipayConfig.notify_payment_url ); //在公共参数中设置回跳和通知地址
+        alipayRequest.setReturnUrl(AlipayConfig.return_payment_url);
+        alipayRequest.setNotifyUrl(AlipayConfig.notify_payment_url); //在公共参数中设置回跳和通知地址
+        alipayRequest.setBizContent(s);
         String form = "";
         try {
             form = alipayClient.pageExecute(alipayRequest).getBody();//调用SDK生成  扫码支付或登录支付表单
@@ -73,7 +77,7 @@ public class PaymentController {
 
         //生成并保存用户信息
         //1.通过外部交易号 获取 订单Order
-       OmsOrder order =  orderService.getOrderByOutTradeNo(outTradeNumber);
+        OmsOrder order = orderService.getOrderByOutTradeNo(outTradeNumber);
         //2.保存交易信息到DB
         PaymentInfo paymentInfo = new PaymentInfo();
         paymentInfo.setCreateTime(new Date());
@@ -88,25 +92,26 @@ public class PaymentController {
         //提交请求到支付宝
         System.out.println(form);
 
-        //我无法请求支付宝了 只能模拟成功
+        //向MQ发送一个检查支付状态（支付服务消费）的延迟消息队列 用来检查是否支付成功了！
+        paymentService.sendDelayPaymentResultCheckQueue(outTradeNumber,5);
+
+
 //        return form;
+//        我无法请求支付宝了 只能模拟成功
        modelMap.put("outTradeNumber",outTradeNumber);
         return "redirect:http://payment.gmall.com:8030/alipay/callback/return?sign=1&out_trade_no="+outTradeNumber;
     }
-    @RequestMapping(value = "/mx/submit",method = RequestMethod.POST)
+
+    @RequestMapping(value = "/mx/submit", method = RequestMethod.POST)
     @LoginRequired(LoginNecessary = true)
-    public String mx(){
+    public String mx() {
         return null;
     }
 
-
-
-
-
-    @RequestMapping(value = "/alipay/callback/return",method = RequestMethod.GET)
+    @RequestMapping(value = "/alipay/callback/return", method = RequestMethod.GET)
     @LoginRequired(LoginNecessary = true)   //扫码支付成功后的  同步回调地址  我们没法测试异步
     @ResponseBody
-    public String alipaycallbackreturn(HttpServletRequest request, ModelMap modelMap){
+    public String alipaycallbackreturn(HttpServletRequest request, ModelMap modelMap) {
         //1.从回调请求中获取支付宝的参数
         String sign = request.getParameter("sign");
         String trade_no = request.getParameter("trade_no");
@@ -117,22 +122,32 @@ public class PaymentController {
         String subject = request.getParameter("subject");
 
         //2.通过支付宝的paramsMap进行签名验证，2.0版本的接口将paramsMap参数去掉了，导致同步请求没法验签
-        if(StringUtils.isNotBlank(sign)){
+        if (StringUtils.isNotBlank(sign)) {
             //验签成功
             String callback_content = request.getQueryString(); //支付宝返回的 callback_content
             PaymentInfo paymentInfo = new PaymentInfo();
             paymentInfo.setOrderSn(out_trade_no);
             paymentInfo.setAlipayTradeNo(trade_no);
             paymentInfo.setPaymentStatus("已支付");
-            paymentInfo.setCallbackContent(callback_content);
             paymentInfo.setCallbackTime(new Date());
+            paymentInfo.setCallbackContent(callback_content);
+
             //更新用户支付状态
             try {
-                paymentService.updatePaymentInfo(paymentInfo);
+                /*
+                由于 监听器和此处都会去根据支付宝的返回情况做出更新paymentinfo
+                更新前 需要进行幂等性操作！
+                 */
+                PaymentInfo paymentInfoInDB = paymentService.selectPaymentInfo(out_trade_no);
+                if (!paymentInfoInDB.getOrderSn().equals(out_trade_no)) {
+                    paymentService.updatePaymentInfo(paymentInfo);
+                }else{
+                    //已被更新 无需继续
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             //
         }
 
@@ -143,7 +158,7 @@ public class PaymentController {
          执行成功，则继续；  执行失败，则@Transactional回滚，同时MQ重发
          */
 
-
+      
         return "success";
     }
 }

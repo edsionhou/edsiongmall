@@ -37,7 +37,9 @@ public class MQconsume1 {
                     }
                 }
             });
-            System.in.read();
+
+
+//            System.in.read();
             consumer.close();
             session.close();
             connection.close();

@@ -13,4 +13,5 @@ public interface OrderService {
 
     OmsOrder getOrderByOutTradeNo(String outTradeNumber);
 
+    void updateOrderStatus(String outTradeNo);
 }

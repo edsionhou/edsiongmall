@@ -1,9 +1,6 @@
 package com.hou.gmall.bean;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -29,7 +26,7 @@ public class OmsOrder implements Serializable {
     private BigDecimal discountAmount;
     private int        payType;
     private int sourceType;
-    private int        status;
+    private int   status;
     private int orderType;
     private String        deliveryCompany;
     private String deliverySn;
@@ -190,11 +187,11 @@ public class OmsOrder implements Serializable {
         this.sourceType = sourceType;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
